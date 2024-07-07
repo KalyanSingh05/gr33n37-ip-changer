@@ -36,7 +36,10 @@ fi
 
 if ! systemctl --quiet is-active tor.service; then
     echo "Starting tor service"
-    systemctl start tor.service
+    systemctl start tor.service || {
+        echo "Failed to start tor service"
+        exit 1
+    }
 fi
 
 get_ip() {
@@ -49,7 +52,10 @@ get_ip() {
 
 change_ip() {
     echo "Reloading tor service"
-    systemctl reload tor.service
+    systemctl reload tor.service || {
+        echo "Failed to reload tor service"
+        exit 1
+    }
     echo -e "\033[34mNew IP address: $(get_ip)\033[0m"
 }
 
@@ -75,9 +81,12 @@ while true; do
             sleep "$interval"
         done
     else
+        echo "Changing IP $times times with $interval seconds interval"
         for ((i=0; i< times; i++)); do
             change_ip
             sleep "$interval"
         done
+        echo "IP changes completed"
+        break
     fi
 done
